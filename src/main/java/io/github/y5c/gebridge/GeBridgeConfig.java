@@ -21,50 +21,6 @@ public interface GeBridgeConfig extends Config
 	)
 	String versionSection = "version";
 
-	@ConfigItem(
-		keyName = "writeBank",
-		name = "Write bank",
-		description = "Include the bank and its potion storage (as of the last time the bank was opened), the rune pouch, and the seed vault (as of the last time it was opened) in state.json",
-		position = 1
-	)
-	default boolean writeBank()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "writeSkills",
-		name = "Write skills",
-		description = "Include skill levels and experience in state.json",
-		position = 2
-	)
-	default boolean writeSkills()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "writeContainers",
-		name = "Write inventory and equipment",
-		description = "Include the inventory and worn equipment in state.json, and what the game said at your last Check of an item (charges, contents)",
-		position = 3
-	)
-	default boolean writeContainers()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "writeAccount",
-		name = "Write quests and diaries",
-		description = "Write account.json with quest states and achievement diary completion (refreshed every few minutes while logged in)",
-		position = 4
-	)
-	default boolean writeAccount()
-	{
-		return true;
-	}
-
 	@Range(min = 10, max = 300)
 	@Units(Units.SECONDS)
 	@ConfigItem(
@@ -154,111 +110,26 @@ public interface GeBridgeConfig extends Config
 	String reminderSection = "reminders";
 
 	@ConfigItem(
+		keyName = "reminders",
+		name = "Reminders",
+		description = "A chat line and a notification when an advised deadline passes while you are logged in: an ask unsold after its grace, a dip hold over, a bid stalled or dead, a buy left uncollected 10 minutes",
+		position = 21,
+		section = reminderSection
+	)
+	default boolean reminders()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "remindNotification",
 		name = "Notification",
 		description = "How reminders notify (desktop notification, flash, sound — follows RuneLite's notification settings)",
-		position = 21,
+		position = 22,
 		section = reminderSection
 	)
 	default Notification remindNotification()
 	{
 		return Notification.ON;
-	}
-
-	@ConfigItem(
-		keyName = "remindGrace",
-		name = "Ask unsold after its grace",
-		description = "An advised ask still unsold when the advice's grace before a trim runs out",
-		position = 22,
-		section = reminderSection
-	)
-	default boolean remindGrace()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "remindDip",
-		name = "Dip hold over",
-		description = "A held price dip reaches the end of its hold",
-		position = 23,
-		section = reminderSection
-	)
-	default boolean remindDip()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "remindStall",
-		name = "Bid stalled",
-		description = "An advised bid has had no fills for the advice's stall time",
-		position = 24,
-		section = reminderSection
-	)
-	default boolean remindStall()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "remindDead",
-		name = "Bid dead",
-		description = "An advised bid with no fills at all for the advice's dead-bid time",
-		position = 25,
-		section = reminderSection
-	)
-	default boolean remindDead()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "remindCollect",
-		name = "Buy left uncollected",
-		description = "An advised buy completed and is still in its slot",
-		position = 26,
-		section = reminderSection
-	)
-	default boolean remindCollect()
-	{
-		return true;
-	}
-
-	@Range(min = 1, max = 120)
-	@ConfigItem(
-		keyName = "remindCollectMinutes",
-		name = "Uncollected after (minutes)",
-		description = "How long a completed advised buy waits in its slot before the reminder",
-		position = 27,
-		section = reminderSection
-	)
-	default int remindCollectMinutes()
-	{
-		return 10;
-	}
-
-	@ConfigItem(
-		keyName = "remindPanel",
-		name = "Deadlines in the panel",
-		description = "Show each kept advised order's next deadline in the Grand Exchange panel: the time left, or 'now' once it has passed",
-		position = 29,
-		section = reminderSection
-	)
-	default boolean remindPanel()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "remindChat",
-		name = "Chat line",
-		description = "Also write each reminder in the chat box",
-		position = 28,
-		section = reminderSection
-	)
-	default boolean remindChat()
-	{
-		return true;
 	}
 }

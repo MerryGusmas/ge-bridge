@@ -95,7 +95,7 @@ import net.runelite.client.util.Text;
 public class GeBridgePlugin extends Plugin
 {
 	static final int SCHEMA = 1;
-	static final String VERSION = "0.7.5";
+	static final String VERSION = "0.8.0";
 	private static final long FLUSH_MIN_MS = 1_000;
 	// slots that got no event at login are read from the client this many ticks after it (RuneLite's own GE
 	// plugin sees the login burst end within 2 ticks; 10 leaves a wide margin before an EMPTY is believed)
@@ -414,7 +414,7 @@ public class GeBridgePlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked e)
 	{
-		if (!config.writeContainers() || !Checks.isCheck(e.getMenuOption()))
+		if (!Checks.isCheck(e.getMenuOption()))
 		{
 			return;
 		}
@@ -617,7 +617,7 @@ public class GeBridgePlugin extends Plugin
 			readRunePouch(now);
 		}
 		final int sinceLogin = client.getTickCount() - loginTick;
-		if (loggedIn && config.writeAccount() && sinceLogin >= ACCOUNT_FIRST_TICKS
+		if (loggedIn && sinceLogin >= ACCOUNT_FIRST_TICKS
 			&& (accountTick < 0 || client.getTickCount() - accountTick >= ACCOUNT_EVERY_TICKS))
 		{
 			accountTick = client.getTickCount();
@@ -649,32 +649,22 @@ public class GeBridgePlugin extends Plugin
 	 */
 	private Reminders.Settings reminderSettings()
 	{
-		final Reminders.Settings s = new Reminders.Settings();
-		s.grace = config.remindGrace();
-		s.dip = config.remindDip();
-		s.stall = config.remindStall();
-		s.dead = config.remindDead();
-		s.collect = config.remindCollect();
-		s.collectMinutes = config.remindCollectMinutes();
-		return s;
+		return new Reminders.Settings();     // every kind on, buys uncollected after 10 minutes (one switch since 0.8.0)
 	}
 
 	private void remind(long now)
 	{
 		final List<Reminders.Due> due = reminders.due(advice, offersNow(), reminderSettings(), now);
-		if (due.isEmpty())
+		if (due.isEmpty() || !config.reminders())
 		{
 			return;
 		}
-		if (config.remindChat())
+		for (Reminders.Due d : due)
 		{
-			for (Reminders.Due d : due)
-			{
-				chatMessageManager.queue(QueuedMessage.builder()
-					.type(ChatMessageType.GAMEMESSAGE)
-					.runeLiteFormattedMessage(reminderLine(d))
-					.build());
-			}
+			chatMessageManager.queue(QueuedMessage.builder()
+				.type(ChatMessageType.GAMEMESSAGE)
+				.runeLiteFormattedMessage(reminderLine(d))
+				.build());
 		}
 		notifier.notify(config.remindNotification(), due.size() == 1
 			? "GE Bridge: " + due.get(0).text
@@ -1385,9 +1375,9 @@ public class GeBridgePlugin extends Plugin
 		s.addProperty("lastLogout", lastLogout);
 		s.addProperty("heartbeatSeconds", config.heartbeatSeconds());
 		final JsonObject sections = new JsonObject();
-		sections.addProperty("skills", config.writeSkills());
-		sections.addProperty("containers", config.writeContainers());
-		sections.addProperty("bank", config.writeBank());
+		sections.addProperty("skills", true);         // always written since 0.8.0 (the per-section settings went)
+		sections.addProperty("containers", true);
+		sections.addProperty("bank", true);
 		s.add("sections", sections);
 		final JsonObject health = new JsonObject();
 		health.addProperty("since", OfferTracker.iso(healthSince));
@@ -1399,7 +1389,6 @@ public class GeBridgePlugin extends Plugin
 		health.addProperty("overflowed", overflowed);
 		health.addProperty("pending", pending.size());
 		s.add("health", health);
-		if (config.writeSkills())
 		{
 			if (levelsCache != null)
 			{
@@ -1407,7 +1396,6 @@ public class GeBridgePlugin extends Plugin
 			}
 			s.add("skills", skillsCache);
 		}
-		if (config.writeContainers())
 		{
 			s.addProperty("inventoryLoaded", inventoryCache != null);
 			s.add("inventory", inventoryCache);
@@ -1415,7 +1403,6 @@ public class GeBridgePlugin extends Plugin
 			s.add("equipment", equipmentCache);
 			s.add("checks", checks.toJson());
 		}
-		if (config.writeBank())
 		{
 			s.addProperty("bankLoaded", bankCache != null);
 			s.addProperty("bankFromCache", bankFromCache);
@@ -1566,8 +1553,7 @@ public class GeBridgePlugin extends Plugin
 				check = advice.check(itemManager.canonicalize(item), side, client.getVarbitValue(VarbitID.GE_NEWOFFER_QUANTITY), offers);
 			}
 		}
-		final Map<Integer, Reminders.Clock> clocks = config.remindPanel() ? Reminders.clocks(advice, offers, reminderSettings(), now)
-			: java.util.Collections.emptyMap();
+		final Map<Integer, Reminders.Clock> clocks = Reminders.clocks(advice, offers, reminderSettings(), now);
 		return AdviceView.build(advice, offers, mismatches, check, now, config.adviceMaxAgeHours() * 3_600_000L, config.highlightSlots(), clocks);
 	}
 

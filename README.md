@@ -83,11 +83,11 @@ tools written for it read this file too.
 | `grandExchange.offers."0"…"7"` | each slot: `state`, `itemId`, `itemName`, `listedPrice`, `totalQuantity`, `completedQuantity`, `remainingQuantity`, `spent`, `placedAt`, `placedOffline`, `lastFillAt`, `observedAt` (times in epoch ms), `collectedQuantity`, `collectedCoins`, `personal` |
 | `skills` | per skill: `level`, `boostedLevel`, `xp`; plus `combatLevel`, `totalLevel`, `totalXp` (optional) |
 | `inventory`, `equipment` | `items` by slot: `id`, `name`, `quantity`, `price`, `value` (optional) |
-| `checks` | what the game said in chat the last time you used an item's **Check** option (a charged weapon's charges, darts and scales, a sack's or bag's contents), by item id: `id`, `name`, `lines` (the messages as written, tags removed), `timestamp` — only messages arriving within three ticks of the click; up to 50 items, the oldest dropped first (0.6.8, with the inventory and equipment setting) |
+| `checks` | what the game said in chat the last time you used an item's **Check** option (a charged weapon's charges, darts and scales, a sack's or bag's contents), by item id: `id`, `name`, `lines` (the messages as written, tags removed), `timestamp` — only messages arriving within three ticks of the click; up to 50 items, the oldest dropped first (0.6.8) |
 | `bank`, `bankLastSeenTimestamp`, `bankFromCache` | the bank as of the last time it was opened (optional) |
-| `potionStore`, `potionStoreLastSeenTimestamp` | the bank's potion storage, which is not part of the bank container: per potion `id`, `name`, `doses`, `withdrawDoses`, `pricePerDose`, `value` (with the bank setting) |
-| `runePouch`, `runePouchLastSeenTimestamp` | the rune pouch, read from the game's pouch variables after login and whenever they change (whether or not the pouch is carried): per slot `id`, `name`, `quantity`, `price`, `value` — up to six slots for the divine rune pouch (0.6.4, with the bank setting) |
-| `seedVault`, `seedVaultLastSeenTimestamp` | the Farming Guild seed vault, as last seen: its contents reach the client only while the vault is open, so this is the last opening's view (0.6.4, with the bank setting) |
+| `potionStore`, `potionStoreLastSeenTimestamp` | the bank's potion storage, which is not part of the bank container: per potion `id`, `name`, `doses`, `withdrawDoses`, `pricePerDose`, `value` |
+| `runePouch`, `runePouchLastSeenTimestamp` | the rune pouch, read from the game's pouch variables after login and whenever they change (whether or not the pouch is carried): per slot `id`, `name`, `quantity`, `price`, `value` — up to six slots for the divine rune pouch (0.6.4) |
+| `seedVault`, `seedVaultLastSeenTimestamp` | the Farming Guild seed vault, as last seen: its contents reach the client only while the vault is open, so this is the last opening's view (0.6.4) |
 
 ## account.json
 
@@ -164,27 +164,22 @@ from `baseline` lines.
 
 ## Settings
 
-The panel's first header shows the running version ("Version 0.7.5"), to compare with the Plugin Hub's.
+The panel's first header shows the running version ("Version 0.8.0"), to compare with the Plugin Hub's.
 
 | setting | default | |
 |---|---|---|
-| Write bank | on | include the bank, its potion storage, the rune pouch and the seed vault in state.json |
-| Write skills | on | include skills and levels |
-| Write inventory and equipment | on | also what the game said at your last Check of an item |
-| Write quests and diaries | on | account.json |
 | Save interval | 30 s | 10–300 s |
 | Event log size (MB) | 5 | 1–50; the size at which events.jsonl is archived |
 | Show advice | on | show advice.json while the Grand Exchange is open, and check new offers against it |
 | Highlight slots | on | outline the slots to act on, and slots whose new order differs from the advice |
 | Advice expiry (hours) | 12 | 1–72; older advice is shown as out of date |
 | Personal tag option | on | adds "Mark personal" to a slot's right-click menu (writes a `tag` event; nothing is sent to the game) |
+| Reminders | on | a chat line and a notification for each reminder above (buys uncollected after 10 minutes) |
 | Reminders: Notification | on | how reminders notify; follows RuneLite's notification settings |
-| Reminders: one switch per reminder | on | ask unsold after its grace, dip hold over, bid stalled, bid dead, buy left uncollected |
-| Reminders: Uncollected after (minutes) | 10 | 1–120 |
-| Reminders: Chat line | on | also write each reminder in the chat box |
-| Reminders: Deadlines in the panel | on | show each kept advised order's next deadline in the panel |
 
-The Grand Exchange slots and the event log are always written; they are what the plugin is for.
+Everything in state.json and account.json is always written (0.8.0: the four "Write …" settings, the per-reminder
+switches, the chat-line and panel-deadline switches and the uncollected delay went — one obvious default each). The files
+stay on your computer; the plugin sends nothing anywhere. Deadlines always show in the panel while advice is on.
 
 ## Known limits
 
