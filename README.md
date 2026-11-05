@@ -133,13 +133,13 @@ RuneLite notification (following your notification settings) and a chat line:
 
 | reminder | when |
 |---|---|
-| ask unsold after its grace | `askGraceHours` after listing, with no sale in the last 2 h: "trim to `trimTo`" when the advice gave one |
+| ask unsold after its grace | `askGraceHours` after listing, with no sale in the last 2 h: "trim to `trimTo`"; an ask the advice names with no `trimTo` gets no reminder (0.8.1) |
 | dip hold over | at `holdUntil`: "trim toward `holdTrimTo`" |
-| bid stalled | `bidStallHours` without a fill: "re-place at `replaceTo`", or "cancel" when the slot has `stallCancel` (0.7.3) |
+| bid stalled | `bidStallHours` without a fill: "re-place at `replaceTo`", or "cancel" when the slot has `stallCancel` (0.7.3); a slot with neither gets no reminder (0.8.1) |
 | bid dead | `bidDeadHours` without any fill |
 | buy left uncollected | a set time after an advised buy completes: "collect and list at `listAt`" |
 
-Deadlines that passed while you were logged out are reminded at the first check after login, in one notification.
+An order placed after the advice was written has no price from it yet, so its reminder says "check in". Deadlines that passed while you were logged out are reminded at the first check after login, in one notification.
 
 **Deadlines in the panel (0.7.1).** While the Grand Exchange is open, each kept advised order with a deadline gets its own
 line in the panel: the action and the time left ("trim 3,362 in 2h10m", grey), or, once it has passed, "now: trim 3,362"
@@ -164,7 +164,7 @@ from `baseline` lines.
 
 ## Settings
 
-The panel's first header shows the running version ("Version 0.8.0"), to compare with the Plugin Hub's.
+The panel's first header shows the running version ("Version 0.8.1"), to compare with the Plugin Hub's.
 
 | setting | default | |
 |---|---|---|
@@ -187,6 +187,9 @@ stay on your computer; the plugin sends nothing anywhere. Deadlines always show 
   out of them is up to your tool, so a layout change in the game cannot make the plugin write wrong trades.
 - **Collections elsewhere.** Collection boxes are only seen while a collection interface is open in this
   client; collecting on mobile is not seen.
+- **Blank slots.** While logged in, the client can show every slot empty for a while and then bring the same orders
+  back. A filling order is kept through this (0.8.1): no `cleared`, no `placed`, no re-sent fills, and its clocks keep
+  running. A finished order is `cleared` as usual, since that is what collecting looks like, and put back silently if it returns.
 - **Login timing.** Fills made while you were logged out are only known to have happened between
   `since` and the login.
 - **Two clients.** Each client reads `state.json` at login and keeps nothing after logout (0.7.5), so a second

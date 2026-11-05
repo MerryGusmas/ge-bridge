@@ -139,7 +139,9 @@ public class RemindersTest
 		final OfferTracker.Offer[] o = new OfferTracker.Offer[8];
 		o[2] = offer(9003, "Gamma seed", "BUYING", 300, 400, 0, 7 * H, null);              // 7 h without a fill
 		final Advice a = advice(NOW - H);
-		assertEquals("re-place (check in)", Reminders.clocks(a, o, new Reminders.Settings(), NOW).get(2).action);
+		// 0.8.1: at the level, no price: no re-place nudge, only the 12 h cancel still counting down
+		assertEquals("dead", Reminders.clocks(a, o, new Reminders.Settings(), NOW).get(2).kind);
+		assertEquals(false, Reminders.clocks(a, o, new Reminders.Settings(), NOW).get(2).due);
 		a.slots().get(2).replaceTo = 310L;
 		assertEquals("re-place 310", Reminders.clocks(a, o, new Reminders.Settings(), NOW).get(2).action);
 		assertEquals(List.of("2 stall: Gamma seed: no fills in 6 h — re-place at 310"),
@@ -152,6 +154,29 @@ public class RemindersTest
 		assertEquals("cancel", Reminders.clocks(a, o, new Reminders.Settings(), NOW).get(2).action);
 		assertEquals(List.of("2 stall: Gamma seed: no fills in 6 h — the advice cancels it"),
 			texts(new Reminders().due(a, o, new Reminders.Settings(), NOW)));
+	}
+
+	@Test
+	public void onlyAnOrderTheAdviceHasNotSeenSaysCheckIn()
+	{
+		// 0.8.1 (Camphor repair kit, Bagged plant 3, 2026-11-04): the check-in kept them at the level; the panel said "now: re-place (check in)"
+		final Advice a = advice(NOW - H);
+		a.slots().get(0).trimTo = null;
+		final OfferTracker.Offer[] seen = new OfferTracker.Offer[8];
+		seen[0] = offer(9001, "Alpha rune", "SELLING", 1000, 100, 0, 6 * H, null);
+		seen[2] = offer(9003, "Gamma seed", "BUYING", 300, 400, 10, 13 * H, 7 * H);
+		assertTrue(Reminders.clocks(a, seen, new Reminders.Settings(), NOW).isEmpty());
+		assertTrue(new Reminders().due(a, seen, new Reminders.Settings(), NOW).isEmpty());
+		final OfferTracker.Offer[] unseen = new OfferTracker.Offer[8];
+		unseen[3] = offer(9004, "Delta hide", "BUYING", 700, 80, 10, 13 * H, 7 * H);          // the pick, placed after the advice
+		assertEquals("re-place (check in)", Reminders.clocks(a, unseen, new Reminders.Settings(), NOW).get(3).action);
+		// a quiet bid the check-in kept at the level still reaches the 12 h cancel
+		final OfferTracker.Offer[] quiet = new OfferTracker.Offer[8];
+		quiet[2] = offer(9003, "Gamma seed", "BUYING", 300, 400, 0, 13 * H, null);
+		assertEquals("cancel", Reminders.clocks(a, quiet, new Reminders.Settings(), NOW).get(2).action);
+		quiet[2] = offer(9003, "Gamma seed", "BUYING", 300, 400, 0, 8 * H, null);
+		assertEquals("dead", Reminders.clocks(a, quiet, new Reminders.Settings(), NOW).get(2).kind);
+		assertEquals(false, Reminders.clocks(a, quiet, new Reminders.Settings(), NOW).get(2).due);
 	}
 
 	@Test

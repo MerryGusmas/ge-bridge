@@ -91,6 +91,8 @@ final class OfferTracker
 	private final boolean[] seen = new boolean[SLOTS];
 	// when each slot was last observed before this session began: the start of the window for an offline change
 	private final Long[] sessionStart = new Long[SLOTS];
+	// a finished order that went blank this session, in case it is a blank and comes back (0.8.1)
+	private final Offer[] blanked = new Offer[SLOTS];
 
 	Offer get(int slot)
 	{
@@ -107,6 +109,7 @@ final class OfferTracker
 	{
 		slots[slot] = o;
 		seen[slot] = false;
+		blanked[slot] = null;
 		sessionStart[slot] = o == null ? null : o.observedAt;
 	}
 
@@ -116,6 +119,7 @@ final class OfferTracker
 		for (int i = 0; i < SLOTS; i++)
 		{
 			seen[i] = false;
+			blanked[i] = null;
 			sessionStart[i] = slots[i] == null ? null : slots[i].observedAt;
 		}
 	}
@@ -166,8 +170,33 @@ final class OfferTracker
 			return out;
 		}
 
+		// 0.8.1 (2026-11-02, three times in one evening): while logged in, the client can show every slot empty for minutes
+		// and then bring the same orders back. An order still filling cannot leave its slot during a session without first
+		// finishing or being cancelled, so an empty slot here is a blank: the order is kept, with its clocks
+		if (snap.isEmpty() && !prev.isEmpty() && !offline && !isTerminal(prev.state))
+		{
+			return out;
+		}
+		// a finished order can really leave (collected), so it is cleared; if it then comes back exactly as it was, it was a blank
+		final Offer gone = blanked[slot];
+		if (!snap.isEmpty())
+		{
+			blanked[slot] = null;
+		}
+		if (gone != null && prev.isEmpty() && snap.sameOrder(gone) && isTerminal(snap.state)
+			&& snap.done == gone.done && snap.spent == gone.spent)
+		{
+			carry(gone, snap);
+			slots[slot] = snap;
+			return out;
+		}
+
 		if (!snap.sameOrder(prev))
 		{
+			if (snap.isEmpty() && !offline && !prev.isEmpty())
+			{
+				blanked[slot] = prev;
+			}
 			if (!prev.isEmpty())
 			{
 				Map<String, Object> e = event("cleared", slot, prev, now, offline, since);
@@ -194,12 +223,7 @@ final class OfferTracker
 			return out;
 		}
 
-		snap.placedAt = prev.placedAt;
-		snap.placedOffline = prev.placedOffline;
-		snap.lastFillAt = prev.lastFillAt;
-		snap.collectedQty = prev.collectedQty;
-		snap.collectedCoins = prev.collectedCoins;
-		snap.personal = prev.personal;
+		carry(prev, snap);
 		final int d = snap.done - prev.done;
 		if (d > 0)
 		{
@@ -269,6 +293,17 @@ final class OfferTracker
 			return 0;
 		}
 		return "buy".equals(o.side()) || o.state.startsWith("CANCELLED") ? gone : 0;
+	}
+
+	/** The same order seen again: what the plugin remembers about it stays. */
+	private static void carry(Offer prev, Offer snap)
+	{
+		snap.placedAt = prev.placedAt;
+		snap.placedOffline = prev.placedOffline;
+		snap.lastFillAt = prev.lastFillAt;
+		snap.collectedQty = prev.collectedQty;
+		snap.collectedCoins = prev.collectedCoins;
+		snap.personal = prev.personal;
 	}
 
 	private static boolean isTerminal(String state)

@@ -117,6 +117,51 @@ public class OfferTrackerTest
 	}
 
 	@Test
+	public void aFillingOrderSurvivesABlankWhileLoggedIn()
+	{
+		// 0.8.1 (2026-11-02 22:17, 22:26, 23:15): every slot empty for minutes, then the same orders back
+		OfferTracker t = remembering(buy(10, 1_893_340), T0 - 1_000);
+		t.observe(0, buy(10, 1_893_340), T0);
+		final long placedAt = t.get(0).placedAt == null ? -1 : t.get(0).placedAt;
+		assertTrue(t.observe(0, empty(), T0 + 1).isEmpty());
+		assertEquals(10, t.get(0).done);                                   // still known, for state.json and the panel
+		assertTrue(t.observe(0, buy(10, 1_893_340), T0 + 450_000).isEmpty());
+		assertEquals(placedAt, t.get(0).placedAt == null ? -1 : (long) t.get(0).placedAt);
+		// fills made during the blank are booked once, as the difference
+		List<Map<String, Object>> evs = t.observe(0, empty(), T0 + 450_001);
+		assertTrue(evs.isEmpty());
+		evs = t.observe(0, buy(14, 2_650_676), T0 + 900_000);
+		assertEquals(List.of("fill"), types(evs));
+		assertEquals(4, evs.get(0).get("qty"));
+	}
+
+	@Test
+	public void aFinishedOrderThatComesBackFromABlankIsPutBackSilently()
+	{
+		OfferTracker t = remembering(buy(23, 4_354_682), T0 - 1_000);
+		t.observe(0, buy(23, 4_354_682), T0);
+		assertEquals(List.of("fill", "completed"), types(t.observe(0, buy(24, 4_544_016), T0 + 1)));
+		assertEquals(List.of("cleared"), types(t.observe(0, empty(), T0 + 2)));
+		assertTrue(t.observe(0, empty(), T0 + 3).isEmpty());               // the client can repeat the empty slot
+		assertTrue(t.observe(0, buy(24, 4_544_016), T0 + 450_000).isEmpty());
+		assertEquals("BOUGHT", t.get(0).state);
+		assertEquals(List.of("cleared"), types(t.observe(0, empty(), T0 + 450_001)));   // collected this time
+		// the same order placed anew after that is a new order
+		assertEquals(List.of("placed"), types(t.observe(0, buy(0, 0), T0 + 450_002)));
+	}
+
+	@Test
+	public void aFillingOrderReplacedInTheSessionIsStillFlagged()
+	{
+		OfferTracker t = remembering(buy(10, 1_893_340), T0 - 1_000);
+		t.observe(0, buy(10, 1_893_340), T0);
+		OfferTracker.Offer sell = new OfferTracker.Offer(3140, "Dragon chainbody", "SELLING", 197_452, 24, 0, 0);
+		List<Map<String, Object>> evs = t.observe(0, sell, T0 + 1);
+		assertEquals(List.of("cleared", "placed"), types(evs));
+		assertEquals(true, evs.get(0).get("unobserved"));
+	}
+
+	@Test
 	public void orderReplacedWhileAwayClearsTheOldAndPlacesTheNew()
 	{
 		OfferTracker t = remembering(buy(10, 1_893_340), T0 - 3_600_000);
@@ -208,6 +253,9 @@ public class OfferTrackerTest
 		t.observe(0, buy(12, 2_272_008), T0 + 2);
 		assertTrue(t.get(0).personal);
 		assertEquals(true, ((Map<?, ?>) ((Map<?, ?>) t.toJson().get("offers")).get("0")).get("personal"));
+		OfferTracker.Offer cancelled = buy(12, 2_272_008);
+		cancelled.state = "CANCELLED_BUY";
+		t.observe(0, cancelled, T0 + 3);
 		t.observe(0, empty(), T0 + 3);
 		t.observe(0, buy(0, 0), T0 + 4);
 		assertTrue(!t.get(0).personal);

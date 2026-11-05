@@ -108,7 +108,9 @@ final class Reminders
 								o.item + ": the dip hold is over — trim toward " + (to != null ? to + stale : "the 2 h level (check in)"), id + "dip");
 						}
 					}
-					else if (s.grace && d != null && d.askGraceHours != null && o.done < o.total)
+					// 0.8.1: a check-in that saw this ask and named no trim has nothing more to say, so only an ask placed
+					// after the advice gets the "check in" nudge
+					else if (s.grace && d != null && d.askGraceHours != null && o.done < o.total && (sl == null || sl.trimTo != null))
 					{
 						// due once the grace has run AND the ask has gone 2 h without a sale
 						final long at = Math.max(placed + hours(d.askGraceHours), o.lastFillAt != null ? o.lastFillAt + FILLING_MS : 0);
@@ -129,9 +131,10 @@ final class Reminders
 						c = new Clock("dead", dead, now, "cancel", o.item + ": no fills in " + trimHours(d.bidDeadHours)
 							+ " h — the advice cancels bids this quiet", id + "dead");
 					}
-					else if (stall != null)
+					// what the advice said a stall brings (0.7.3): cancel, or the price to re-place at; 0.8.1: nothing, for a bid
+					// the check-in saw at the buying level (no price above it), so only a bid placed after the advice gets "check in"
+					else if (stall != null && (sl == null || Boolean.TRUE.equals(sl.stallCancel) || sl.replaceTo != null))
 					{
-						// what the advice said a stall brings (0.7.3): cancel, or the price to re-place at
 						final boolean cancel = sl != null && Boolean.TRUE.equals(sl.stallCancel);
 						final String to = !cancel && sl != null && sl.replaceTo != null ? Advice.fmt(sl.replaceTo) : null;
 						c = new Clock("stall", stall, now, cancel ? "cancel" : to != null ? "re-place " + to : "re-place (check in)",
