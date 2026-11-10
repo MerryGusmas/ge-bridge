@@ -99,7 +99,7 @@ complete, from the game's own completion flags, plus totals. Same field names as
 ## advice.json (optional, written by your tool)
 
 If your own tool writes `advice.json` into the account folder, GE Bridge shows it while the Grand Exchange is open: a
-compact panel listing what to do with each slot ("2 Divine battlemage potion(4) — trim 19,000") and which orders to
+compact panel listing what to do with each slot ("2 Delta hide — trim 3,300") and which orders to
 place ("+ Toktz-ket-xil — 20 @ 300,000"), and an outline on the slots to act on. The panel widens to fit its longest
 line, up to 480 px (0.7.4). Item names over 32 characters are cut, always keeping their last three characters, so
 doses, charges and tiers stay readable. An order leaves the list once you
@@ -164,7 +164,7 @@ from `baseline` lines.
 
 ## Settings
 
-The panel's first header shows the running version ("Version 0.8.1"), to compare with the Plugin Hub's.
+The panel's first header shows the running version ("Version 0.8.2"), to compare with the Plugin Hub's.
 
 | setting | default | |
 |---|---|---|

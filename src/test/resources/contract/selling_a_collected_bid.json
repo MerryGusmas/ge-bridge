@@ -20,7 +20,7 @@
  },
  "checks": [
   {
-   "contains": "sell 1,200 @ 3,300 (cost 3,000)",
+   "contains": "sell 1,200 @ 3,300",
    "itemId": 9003,
    "level": "ok",
    "qty": 1200,

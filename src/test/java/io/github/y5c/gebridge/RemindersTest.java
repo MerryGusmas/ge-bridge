@@ -135,7 +135,7 @@ public class RemindersTest
 	@Test
 	public void aStalledBidNamesWhatTheAdviceSaidItBrings()
 	{
-		// 0.7.3 (expeditious bracelet 2026-10-27): "now: re-place" without a price
+		// 0.7.3: "now: re-place" without a price
 		final OfferTracker.Offer[] o = new OfferTracker.Offer[8];
 		o[2] = offer(9003, "Gamma seed", "BUYING", 300, 400, 0, 7 * H, null);              // 7 h without a fill
 		final Advice a = advice(NOW - H);
@@ -159,7 +159,7 @@ public class RemindersTest
 	@Test
 	public void onlyAnOrderTheAdviceHasNotSeenSaysCheckIn()
 	{
-		// 0.8.1 (Camphor repair kit, Bagged plant 3, 2026-11-04): the check-in kept them at the level; the panel said "now: re-place (check in)"
+		// 0.8.1: the check-in kept two bids at the level; the panel said "now: re-place (check in)"
 		final Advice a = advice(NOW - H);
 		a.slots().get(0).trimTo = null;
 		final OfferTracker.Offer[] seen = new OfferTracker.Offer[8];

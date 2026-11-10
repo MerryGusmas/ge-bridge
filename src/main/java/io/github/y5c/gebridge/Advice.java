@@ -278,8 +278,9 @@ final class Advice
 			// read "Advice is to buy this item, not sell")
 			if (other != null && "sell".equals(side) && "buy".equals(other.side) && other.listLater != null)
 			{
-				// the item is already chosen on the offer screen: quantity and price only, on one line
-				lines.add("sell " + (other.qty == null ? "" : fmt(other.qty) + " ") + "@ " + fmt(other.listLater) + " (cost " + fmt(other.price) + ")");
+				// the item is already chosen on the offer screen: quantity and price only, on one line. No cost beside it:
+				// a sale went up at the bid's price, read from "(cost N)" on this line, and lost the tax (0.8.2)
+				lines.add("sell " + (other.qty == null ? "" : fmt(other.qty) + " ") + "@ " + fmt(other.listLater));
 				if (other.qty != null && qty > other.qty)
 				{
 					lines.add("Quantity " + fmt(qty) + " is more than the " + fmt(other.qty) + " advised");

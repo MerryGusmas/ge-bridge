@@ -110,7 +110,8 @@ public class AdviceTest
 			+ "\"side\":\"buy\",\"price\":3000,\"qty\":1200,\"why\":\"pick\",\"listLater\":3300}]}", Advice.class);
 		final Advice.Check ok = a.check(9004, "sell", 1200, slots());
 		assertEquals("ok", ok.level);
-		assertTrue(String.join("|", ok.lines).contains("sell 1,200 @ 3,300 (cost 3,000)"));
+		assertTrue(String.join("|", ok.lines).contains("sell 1,200 @ 3,300"));
+		assertFalse(String.join("|", ok.lines).contains("3,000"));         // the bid's price is not on the line to misread
 		assertEquals("ok", a.check(9004, "sell", 1000, slots()).level);      // part of a part-filled bid
 		assertEquals("warn", a.check(9004, "sell", 2000, slots()).level);
 		// without a list price the old warning stands
