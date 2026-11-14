@@ -2,9 +2,11 @@ package io.github.y5c.gebridge;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -103,6 +105,8 @@ final class Advice
 	// buyers fills and is collected in seconds, and its slot never shows it to a later check (0.6.5). Transient: not
 	// read from the file; a new advice file starts empty.
 	private transient Set<Order> placed;
+	// slot -> the advised order its offer was credited with, so one offer carries out one order (0.8.4)
+	private transient Map<Integer, Order> credited;
 
 	boolean usable()
 	{
@@ -169,6 +173,11 @@ final class Advice
 	 */
 	void markPlaced(OfferTracker.Offer o)
 	{
+		markPlaced(-1, o);
+	}
+
+	void markPlaced(int slot, OfferTracker.Offer o)
+	{
 		if (o == null || o.isEmpty())
 		{
 			return;
@@ -176,13 +185,35 @@ final class Advice
 		if (placed == null)
 		{
 			placed = new HashSet<>();
+			credited = new HashMap<>();
 		}
 		for (Order a : orders())
 		{
 			if (!placed.contains(a) && matches(a, o))
 			{
 				placed.add(a);
+				if (slot >= 0)
+				{
+					credited.put(slot, a);
+				}
 				return;
+			}
+		}
+	}
+
+	/**
+	 * An advised order seen in a slot counts as placed, not only one seen being placed (0.8.4): this memory is lost when
+	 * the client restarts, and a sale that sold while logged out came back as "to place" once it was collected.
+	 */
+	private void notePlaced(OfferTracker.Offer[] now)
+	{
+		for (int i = 0; i < now.length; i++)
+		{
+			final OfferTracker.Offer o = now[i];
+			final Order c = credited == null ? null : credited.get(i);
+			if (o != null && !o.isEmpty() && (c == null || !matches(c, o)))
+			{
+				markPlaced(i, o);
 			}
 		}
 	}
@@ -215,6 +246,7 @@ final class Advice
 	/** Advised orders no slot holds yet and not seen placed. */
 	List<Order> open(OfferTracker.Offer[] now)
 	{
+		notePlaced(now);
 		final List<Order> out = new ArrayList<>();
 		for (Order a : orders())
 		{

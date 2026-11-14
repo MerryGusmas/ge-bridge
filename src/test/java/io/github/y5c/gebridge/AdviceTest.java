@@ -67,7 +67,8 @@ public class AdviceTest
 		assertEquals(3, a.open(slots()).size());
 		// the Gamma seed order has no quantity: any quantity at the advised price counts
 		assertEquals(2, a.open(slots(offer(GAMMA, "Gamma seed", "BUYING", 50000, 37))).size());
-		assertEquals(3, a.open(slots(offer(GAMMA, "Gamma seed", "BUYING", 49900, 40))).size());
+		// another price is not the order (a fresh advice: since 0.8.4 the match above counts as placed)
+		assertEquals(3, advice().open(slots(offer(GAMMA, "Gamma seed", "BUYING", 49900, 40))).size());
 	}
 
 	@Test
@@ -216,6 +217,26 @@ public class AdviceTest
 		assertEquals(2, a.toPlace(slots()).size());
 		// re-listed at the advised price: placed, nothing left but the pick
 		assertEquals(1, a.toPlace(slots(offer(ALPHA, "Alpha rune", "SELLING", 950, 1000))).size());
+	}
+
+	@Test
+	public void anOrderSeenInASlotStaysPlacedAfterItIsCollected()
+	{
+		// 0.8.4: a fresh advice (the client restarted) first sees the sale already sold in its slot; once collected it
+		// must not come back as "to place"
+		final String json = "{\"schema\":1,\"generatedAt\":1,\"orders\":["
+			+ "{\"itemId\":9002,\"item\":\"Beta bar\",\"side\":\"sell\",\"price\":5000,\"qty\":300,\"why\":\"list\"},"
+			+ "{\"itemId\":9002,\"item\":\"Beta bar\",\"side\":\"sell\",\"price\":5000,\"qty\":300,\"why\":\"list\"}]}";
+		final Advice a = new Gson().fromJson(json, Advice.class);
+		final OfferTracker.Offer sold = new OfferTracker.Offer(9002, "Beta bar", "SOLD", 5000, 300, 300, 0);
+		assertEquals(0, a.toPlace(slots(sold)).size());       // while it is up, it hides both identical orders (as before)
+		assertEquals(0, a.toPlace(slots(sold)).size());       // seen again: still credited to one order only
+		assertEquals(1, a.toPlace(slots()).size());           // collected: the order it carried out stays placed
+		// placed while watched (slot known): the next look at the slot credits nothing more
+		final Advice b = new Gson().fromJson(json, Advice.class);
+		b.markPlaced(0, new OfferTracker.Offer(9002, "Beta bar", "SELLING", 5000, 300, 0, 0));
+		assertEquals(0, b.toPlace(slots(new OfferTracker.Offer(9002, "Beta bar", "SELLING", 5000, 300, 0, 0))).size());
+		assertEquals(1, b.toPlace(slots()).size());
 	}
 
 	@Test

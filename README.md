@@ -164,7 +164,7 @@ from `baseline` lines.
 
 ## Settings
 
-The panel's first header shows the running version ("Version 0.8.3"), to compare with the Plugin Hub's.
+The panel's first header shows the running version ("Version 0.8.4"), to compare with the Plugin Hub's.
 
 | setting | default | |
 |---|---|---|

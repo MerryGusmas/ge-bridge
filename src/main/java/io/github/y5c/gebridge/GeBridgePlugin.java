@@ -95,7 +95,7 @@ import net.runelite.client.util.Text;
 public class GeBridgePlugin extends Plugin
 {
 	static final int SCHEMA = 1;
-	static final String VERSION = "0.8.3";
+	static final String VERSION = "0.8.4";
 	private static final long FLUSH_MIN_MS = 1_000;
 	// slots that got no event at login are read from the client this many ticks after it (RuneLite's own GE
 	// plugin sees the login burst end within 2 ticks; 10 leaves a wide margin before an EMPTY is believed)
@@ -714,7 +714,7 @@ public class GeBridgePlugin extends Plugin
 					{
 						if (advice != null)
 						{
-							advice.markPlaced(snap);
+							advice.markPlaced(slot, snap);
 						}
 						if (ev.get("offline") == null)
 						{
