@@ -121,6 +121,22 @@ public class AdviceTest
 	}
 
 	@Test
+	public void sellingAKeptBidsUnitsUsesItsSlotsListPrice()
+	{
+		// 0.8.3: a bid the check-in kept finished and was collected; it is in no order, so the sale had no price
+		final Advice a = new Gson().fromJson("{\"schema\":1,\"generatedAt\":5,\"slots\":[{\"slot\":6,\"itemId\":9005,\"item\":\"Epsilon root\","
+			+ "\"side\":\"buy\",\"price\":1000,\"total\":2000,\"action\":\"keep\",\"listAt\":1100}]}", Advice.class);
+		final Advice.Check ok = a.check(9005, "sell", 2000, slots());
+		assertEquals("ok", ok.level);
+		assertTrue(String.join("|", ok.lines).contains("sell 2,000 @ 1,100"));
+		assertEquals("warn", a.check(9005, "sell", 2500, slots()).level);
+		// a cancelled bid's slot is not a list price: its bought units come as an order of their own
+		final Advice c = new Gson().fromJson("{\"schema\":1,\"generatedAt\":5,\"slots\":[{\"slot\":6,\"itemId\":9005,\"item\":\"Epsilon root\","
+			+ "\"side\":\"buy\",\"price\":1000,\"total\":2000,\"action\":\"cancel\",\"listAt\":1100}]}", Advice.class);
+		assertFalse(String.join("|", c.check(9005, "sell", 2000, slots()).lines).contains("@ 1,100"));
+	}
+
+	@Test
 	public void aBidsListPriceIsAdvisedEvenBesideAnotherAsk()
 	{
 		// 2026-10-15: slot 4's 1,000 units were advised at 2,100 and the new bid's 1,500 carried listLater 2,060;

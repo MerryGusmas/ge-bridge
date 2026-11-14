@@ -288,6 +288,19 @@ final class Advice
 				}
 				return new Check("ok", lines);
 			}
+			// a kept bid's units, collected before the next check-in: its slot carries the list price, and no order does
+			// (0.8.3; a kept bid finished, was collected, and the sale's offer screen had no price)
+			final Slot kept = "sell".equals(side) ? keptBid(itemId) : null;
+			if (other == null && kept != null)
+			{
+				lines.add("sell " + fmt(kept.total) + " @ " + fmt(kept.listAt));
+				if (qty > kept.total)
+				{
+					lines.add("Quantity " + fmt(qty) + " is more than the " + fmt(kept.total) + " advised");
+					return new Check("warn", lines);
+				}
+				return new Check("ok", lines);
+			}
 			if (other != null)
 			{
 				lines.add("Advice is to " + other.side + " this item, not " + side);
@@ -431,6 +444,19 @@ final class Advice
 	static boolean matches(Order a, OfferTracker.Offer o)
 	{
 		return sameItem(a.itemId, a.item, o) && o.side().equals(a.side) && a.price == o.price && (a.qty() == null || a.qty() == o.total);
+	}
+
+	/** The advice's kept bid on this item that carries a list price, or null (0.8.3). */
+	private Slot keptBid(int itemId)
+	{
+		for (Slot s : slots())
+		{
+			if (s.itemId == itemId && "buy".equals(s.side) && s.listAt != null && "keep".equals(s.action))
+			{
+				return s;
+			}
+		}
+		return null;
 	}
 
 	private static boolean sameItem(int itemId, String item, OfferTracker.Offer o)

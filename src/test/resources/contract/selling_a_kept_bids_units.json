@@ -1,0 +1,42 @@
+{
+ "advice": {
+  "generatedAt": 1800000000000,
+  "generatedIso": "2027-01-15T08:00:00Z",
+  "orders": [],
+  "schema": 1,
+  "slots": [
+   {
+    "action": "keep",
+    "done": 1800,
+    "item": "Zeta log",
+    "itemId": 9006,
+    "listAt": 1100,
+    "price": 1000,
+    "reason": "keep",
+    "side": "buy",
+    "slot": 6,
+    "text": "keep",
+    "total": 2000
+   }
+  ]
+ },
+ "checks": [
+  {
+   "contains": "sell 2,000 @ 1,100",
+   "itemId": 9006,
+   "level": "ok",
+   "qty": 2000,
+   "side": "sell",
+   "type": "check"
+  },
+  {
+   "itemId": 9006,
+   "level": "warn",
+   "qty": 2500,
+   "side": "sell",
+   "type": "check"
+  }
+ ],
+ "name": "selling_a_kept_bids_units",
+ "why": "0.8.3: a bid the check-in kept finished and was collected; it is in no order, so its sale reads the slot's list price"
+}
