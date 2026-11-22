@@ -184,6 +184,28 @@ public class AdviceTest
 	}
 
 	@Test
+	public void newAdviceRechecksTheWarnings()
+	{
+		// 0.8.5: three orders were placed differently from the earlier advice, and each slot carries its warning
+		final java.util.Map<Integer, String> warnings = new java.util.HashMap<>();
+		warnings.put(1, "Beta bar: price 310 (advised 300)");
+		warnings.put(2, "Gamma seed: price 51,000 (advised 50,000)");
+		warnings.put(3, "Delta leaf: price 70 (advised 60)");
+		final OfferTracker.Offer[] offers = new OfferTracker.Offer[OfferTracker.SLOTS];
+		offers[1] = offer(BETA, "Beta bar", "BUYING", 310, 200);
+		offers[2] = offer(GAMMA, "Gamma seed", "BUYING", 51000, 10);
+		// slot 3 was collected: nothing is left there to warn about
+		// the next advice keeps the Beta bar bid as placed, and still advises another Gamma seed price
+		final Advice next = new Gson().fromJson("{\"schema\":1,\"generatedAt\":1790000600000,"
+			+ "\"slots\":[{\"slot\":1,\"itemId\":9002,\"item\":\"Beta bar\",\"side\":\"buy\",\"price\":310,\"total\":200,"
+			+ "\"action\":\"keep\",\"text\":\"keep\"}],"
+			+ "\"orders\":[{\"itemId\":9003,\"item\":\"Gamma seed\",\"side\":\"buy\",\"price\":52000,\"qty\":10,\"why\":\"replace\"}]}",
+			Advice.class);
+		next.recheck(warnings, offers);
+		assertEquals(java.util.Collections.singletonMap(2, "Gamma seed: price 51,000 (advised 52,000)"), warnings);
+	}
+
+	@Test
 	public void placedOrderIsComparedWithTheAdvice()
 	{
 		final Advice a = advice();

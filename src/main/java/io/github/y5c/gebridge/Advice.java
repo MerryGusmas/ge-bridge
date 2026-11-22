@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -424,6 +425,30 @@ final class Advice
 			diff.add("qty " + fmt(o.total) + " (advised " + fmt(near.qty()) + ")");
 		}
 		return AdviceView.shorten(o.item, AdviceView.SLOT_NAME) + ": " + String.join(", ", diff);
+	}
+
+	/**
+	 * New advice was written after the orders now in the slots: keep only the "differs from the advice" warnings this
+	 * advice would still give, reworded against it (0.8.5). A warning used to stay until its slot emptied, so it went on
+	 * showing after a check-in whose advice matched the order.
+	 */
+	void recheck(Map<Integer, String> mismatches, OfferTracker.Offer[] offers)
+	{
+		for (Iterator<Map.Entry<Integer, String>> it = mismatches.entrySet().iterator(); it.hasNext(); )
+		{
+			final Map.Entry<Integer, String> m = it.next();
+			final int slot = m.getKey();
+			final OfferTracker.Offer o = slot >= 0 && slot < offers.length ? offers[slot] : null;
+			final String diff = o == null || o.isEmpty() ? null : placedMismatch(o);
+			if (diff == null)
+			{
+				it.remove();
+			}
+			else
+			{
+				m.setValue(diff);
+			}
+		}
 	}
 
 	/**

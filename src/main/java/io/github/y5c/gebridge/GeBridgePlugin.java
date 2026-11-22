@@ -95,7 +95,7 @@ import net.runelite.client.util.Text;
 public class GeBridgePlugin extends Plugin
 {
 	static final int SCHEMA = 1;
-	static final String VERSION = "0.8.4";
+	static final String VERSION = "0.8.5";
 	private static final long FLUSH_MIN_MS = 1_000;
 	// slots that got no event at login are read from the client this many ticks after it (RuneLite's own GE
 	// plugin sees the login burst end within 2 ticks; 10 leaves a wide margin before an EMPTY is believed)
@@ -1474,19 +1474,27 @@ public class GeBridgePlugin extends Plugin
 		}
 		adviceText = text;
 		advice = null;
-		if (text == null)
+		if (text != null)
 		{
-			return;
+			try
+			{
+				final Advice a = gson.fromJson(text, Advice.class);
+				advice = a != null && a.usable() ? a : null;
+			}
+			catch (JsonParseException ex)
+			{
+				readFailures++;
+				log.debug("ge-bridge: advice.json is not valid", ex);
+			}
 		}
-		try
+		// a warning is about the advice it was checked against: new advice rechecks it, no advice ends it (0.8.5)
+		if (advice == null)
 		{
-			final Advice a = gson.fromJson(text, Advice.class);
-			advice = a != null && a.usable() ? a : null;
+			mismatches.clear();
 		}
-		catch (JsonParseException ex)
+		else
 		{
-			readFailures++;
-			log.debug("ge-bridge: advice.json is not valid", ex);
+			advice.recheck(mismatches, offersNow());
 		}
 	}
 
