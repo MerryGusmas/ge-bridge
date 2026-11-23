@@ -17,9 +17,8 @@ import java.util.Set;
  * <pre>
  * {"schema": 1, "generatedAt": epoch ms,
  *  "slots":  [{"slot", "itemId", "item", "side", "price", "total", "action", "text"}],   advice for the order now in a slot
- *             (optional: listAt, trimTo, holdUntil, holdTrimTo, replaceTo, stallCancel — the reminders' prices)
- *  "orders": [{"itemId", "item", "side", "price", "qty", "why", "slot"}],              orders the player should place
- *  "deadlines": {"askGraceHours", "bidStallHours", "bidDeadHours"}}                    the tool's clocks, for reminders (0.7.0)
+ *             (optional: listAt, a bid's list price once it completes)
+ *  "orders": [{"itemId", "item", "side", "price", "qty", "why", "slot"}]}              orders the player should place
  * </pre>
  *
  * A slot entry applies only while that same order (item, side, price, quantity) is still in the slot. An order counts
@@ -44,21 +43,6 @@ final class Advice
 		String text;
 		// a bid: the price to list at once it completes (0.6.3)
 		Long listAt;
-		// an ask: the trim its grace leads to; a held price dip: when the hold ends and the price it then trims to (0.7.0)
-		Long trimTo;
-		Long holdUntil;
-		Long holdTrimTo;
-		// a kept bid: what a check-in would do if it stalls — re-place to this price, or cancel (0.7.3)
-		Long replaceTo;
-		Boolean stallCancel;
-	}
-
-	/** The tool's own clocks, in hours, which the reminders run against each order's times (0.7.0). */
-	static final class Deadlines
-	{
-		Double askGraceHours;
-		Double bidStallHours;
-		Double bidDeadHours;
 	}
 
 	static final class Order
@@ -101,7 +85,6 @@ final class Advice
 	long generatedAt;
 	List<Slot> slots;
 	List<Order> orders;
-	Deadlines deadlines;
 	// orders seen placed since this advice loaded, kept even once their slot is empty again: a sell to the standing
 	// buyers fills and is collected in seconds, and its slot never shows it to a later check (0.6.5). Transient: not
 	// read from the file; a new advice file starts empty.

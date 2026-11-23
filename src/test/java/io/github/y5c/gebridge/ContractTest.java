@@ -3,7 +3,6 @@ package io.github.y5c.gebridge;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.IOException;
@@ -132,30 +131,6 @@ public class ContractTest
 						if (!got.equals(want))
 						{
 							failures.add(where + ": to place " + got + ", expected " + want);
-						}
-						break;
-					}
-					case "reminders":
-					{
-						// each expected line is "SLOT KIND[ text the reminder contains]"; nothing else may fire
-						final List<Reminders.Due> got = new Reminders().due(a, slots(k.getAsJsonObject("slots")), new Reminders.Settings(),
-							k.get("now").getAsLong());
-						final List<String> seen = got.stream().map(d -> d.slot + " " + d.kind + " — " + d.text).collect(Collectors.toList());
-						final JsonArray want = k.getAsJsonArray("expect");
-						if (got.size() != want.size())
-						{
-							failures.add(where + ": fired " + seen + ", expected " + want);
-							break;
-						}
-						for (int j = 0; j < want.size(); j++)
-						{
-							final String[] w = want.get(j).getAsString().split(" ", 3);
-							final Reminders.Due d = got.get(j);
-							if (d.slot != Integer.parseInt(w[0]) || !d.kind.equals(w[1]) || (w.length > 2 && !d.text.contains(w[2])))
-							{
-								failures.add(where + ": fired " + seen + ", expected " + want);
-								break;
-							}
 						}
 						break;
 					}

@@ -12,7 +12,7 @@
     "itemId": 9003,
     "price": 3000,
     "reason": "cancel \u2014 freed for your own purchases",
-    "side": "buy",
+    "side": "sell",
     "slot": 2,
     "text": "cancel",
     "total": 500
@@ -28,7 +28,7 @@
      "item": "Gamma seed",
      "itemId": 9003,
      "price": 3000,
-     "state": "BUYING",
+     "state": "SELLING",
      "total": 500
     }
    },
@@ -44,13 +44,13 @@
    "offer": {
     "item": "Gamma seed",
     "itemId": 9003,
-    "price": 3050,
-    "state": "BUYING",
+    "price": 2950,
+    "state": "SELLING",
     "total": 500
    },
    "type": "mismatch"
   }
  ],
  "name": "cancel_frees_the_slot",
- "why": "bridge_advice.py cancel (2026-10-24): a slot the user asked to free reads 'cancel'; the re-place it was advised is dropped, so the panel lists nothing to place for it \u2014 in the slot or after it empties"
+ "why": "a slot the user asked their tool to free reads 'cancel'; the trim it was advised is dropped, so the panel lists nothing to place for it \u2014 in the slot or after it empties"
 }

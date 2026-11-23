@@ -123,30 +123,9 @@ place it, even if it fills and you collect it at once. The plugin never writes t
   it completes: the panel then reads "collect, list at N" as soon as the buy finishes, and setting up the sale of that
   item later reads "sell N @ P", even after the bought units have been collected.
 
-- `deadlines` (optional) `{"askGraceHours": 5, "bidStallHours": 6, "bidDeadHours": 12}` are your tool's own clocks,
-  used by the reminders. On a `slots` entry, `trimTo` is the trim an ask's grace leads to, and a held price dip carries
-  `holdUntil` (epoch ms) and `holdTrimTo`.
-
-**Reminders (0.7.0).** While you are logged in, GE Bridge checks about once a minute whether one of the advice's own
-deadlines has passed for an order the advice names (never one you marked personal), and says so once per order — a
-RuneLite notification (following your notification settings) and a chat line:
-
-| reminder | when |
-|---|---|
-| ask unsold after its grace | `askGraceHours` after listing, with no sale in the last 2 h: "trim to `trimTo`"; an ask the advice names with no `trimTo` gets no reminder (0.8.1) |
-| dip hold over | at `holdUntil`: "trim toward `holdTrimTo`" |
-| bid stalled | `bidStallHours` without a fill: "re-place at `replaceTo`", or "cancel" when the slot has `stallCancel` (0.7.3); a slot with neither gets no reminder (0.8.1) |
-| bid dead | `bidDeadHours` without any fill |
-| buy left uncollected | a set time after an advised buy completes: "collect and list at `listAt`" |
-
-An order placed after the advice was written has no price from it yet, so its reminder says "check in". Deadlines that passed while you were logged out are reminded at the first check after login, in one notification.
-
-**Deadlines in the panel (0.7.1).** While the Grand Exchange is open, each kept advised order with a deadline gets its own
-line in the panel: the action and the time left ("trim 3,362 in 2h10m", grey), or, once it has passed, "now: trim 3,362"
-in the action colour with the slot outlined. Kept orders without a deadline are still only counted ("2 slots: keep").
-A price from advice more than 3 hours old carries the advice's age. Without `deadlines` only the uncollected-buy
-reminder runs. Reminders never place, change or cancel anything, and do not repeat RuneLite's own "offer complete"
-notice.
+The panel shows what your tool advised when it last ran; it keeps no clocks of its own. (0.9.0: the reminders of
+0.7.0, the deadlines in the panel and the advice fields they read — `deadlines`, `trimTo`, `holdUntil`, `holdTrimTo`,
+`replaceTo`, `stallCancel` — were removed. Fields a tool still writes are ignored.)
 
 **Checks.** While you set up an offer, the panel compares the item, buy or sell, and the quantity with the advised
 orders, and warns about a wrong quantity, the wrong side, or an order that is already placed. The price you type is
@@ -164,7 +143,7 @@ from `baseline` lines.
 
 ## Settings
 
-The panel's first header shows the running version ("Version 0.8.5"), to compare with the Plugin Hub's.
+The panel's first header shows the running version ("Version 0.9.0"), to compare with the Plugin Hub's.
 
 | setting | default | |
 |---|---|---|
@@ -174,12 +153,9 @@ The panel's first header shows the running version ("Version 0.8.5"), to compare
 | Highlight slots | on | outline the slots to act on, and slots whose new order differs from the advice |
 | Advice expiry (hours) | 12 | 1–72; older advice is shown as out of date |
 | Personal tag option | on | adds "Mark personal" to a slot's right-click menu (writes a `tag` event; nothing is sent to the game) |
-| Reminders | on | a chat line and a notification for each reminder above (buys uncollected after 10 minutes) |
-| Reminders: Notification | on | how reminders notify; follows RuneLite's notification settings |
 
-Everything in state.json and account.json is always written (0.8.0: the four "Write …" settings, the per-reminder
-switches, the chat-line and panel-deadline switches and the uncollected delay went — one obvious default each). The files
-stay on your computer; the plugin sends nothing anywhere. Deadlines always show in the panel while advice is on.
+Everything in state.json and account.json is always written (0.8.0: the four "Write …" settings went; 0.9.0: the two
+reminder settings went with the reminders). The files stay on your computer; the plugin sends nothing anywhere.
 
 ## Known limits
 
@@ -188,8 +164,8 @@ stay on your computer; the plugin sends nothing anywhere. Deadlines always show 
 - **Collections elsewhere.** Collection boxes are only seen while a collection interface is open in this
   client; collecting on mobile is not seen.
 - **Blank slots.** While logged in, the client can show every slot empty for a while and then bring the same orders
-  back. A filling order is kept through this (0.8.1): no `cleared`, no `placed`, no re-sent fills, and its clocks keep
-  running. A finished order is `cleared` as usual, since that is what collecting looks like, and put back silently if it returns.
+  back. A filling order is kept through this (0.8.1): no `cleared`, no `placed`, no re-sent fills, and it keeps its
+  placement time. A finished order is `cleared` as usual, since that is what collecting looks like, and put back silently if it returns.
 - **Login timing.** Fills made while you were logged out are only known to have happened between
   `since` and the login.
 - **Two clients.** Each client reads `state.json` at login and keeps nothing after logout (0.7.5), so a second

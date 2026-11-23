@@ -4,7 +4,6 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
-import net.runelite.client.config.Notification;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
@@ -100,36 +99,5 @@ public interface GeBridgeConfig extends Config
 	default boolean personalMenu()
 	{
 		return true;
-	}
-
-	@ConfigSection(
-		name = "Reminders",
-		description = "Reminders when a deadline in your tool's advice passes while you are logged in. Display only: nothing is placed or changed",
-		position = 20
-	)
-	String reminderSection = "reminders";
-
-	@ConfigItem(
-		keyName = "reminders",
-		name = "Reminders",
-		description = "A chat line and a notification when an advised deadline passes while you are logged in: an ask unsold after its grace, a dip hold over, a bid stalled or dead, a buy left uncollected 10 minutes",
-		position = 21,
-		section = reminderSection
-	)
-	default boolean reminders()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "remindNotification",
-		name = "Notification",
-		description = "How reminders notify (desktop notification, flash, sound — follows RuneLite's notification settings)",
-		position = 22,
-		section = reminderSection
-	)
-	default Notification remindNotification()
-	{
-		return Notification.ON;
 	}
 }
