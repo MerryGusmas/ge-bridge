@@ -10,11 +10,11 @@ import java.util.Map;
 /** What the two overlays draw, rebuilt on the client thread each tick while the Grand Exchange is open. Immutable. */
 final class AdviceView
 {
-	static final Color OK = new Color(0x7fd27f);
 	static final Color WARN = new Color(0xff5c5c);
 	static final Color ACT = new Color(0xffd23f);
 	static final Color DIM = new Color(0xa0a0a0);
 	static final Color TEXT = Color.WHITE;
+	static final String PRICE_NOTE = "Price is checked after you confirm";
 
 	static final AdviceView NONE = new AdviceView(null, DIM, Collections.emptyList(), Collections.emptyMap());
 
@@ -116,10 +116,17 @@ final class AdviceView
 		}
 		if (check != null)
 		{
-			final Color color = "ok".equals(check.level) ? OK : "warn".equals(check.level) ? WARN : DIM;
+			// no green here (0.9.1): the check reads the item, the side and the quantity, never the price typed, so a
+			// matching quantity turned the line green while the price was still wrong
+			final boolean ok = "ok".equals(check.level);
+			final Color color = ok ? TEXT : "warn".equals(check.level) ? WARN : DIM;
 			for (String l : check.lines)
 			{
 				lines.add(new Line(l, null, color));
+			}
+			if (ok)
+			{
+				lines.add(new Line(PRICE_NOTE, null, DIM));
 			}
 			return new AdviceView(header, TEXT, lines, slots);
 		}

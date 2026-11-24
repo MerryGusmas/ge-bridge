@@ -129,7 +129,8 @@ The panel shows what your tool advised when it last ran; it keeps no clocks of i
 
 **Checks.** While you set up an offer, the panel compares the item, buy or sell, and the quantity with the advised
 orders, and warns about a wrong quantity, the wrong side, or an order that is already placed. The price you type is
-checked once the order is in its slot (the client keeps it where RuneLite cannot read it by name). A new order that
+checked once the order is in its slot (the client keeps it where RuneLite cannot read it by name), so a matching
+quantity shows in white with "Price is checked after you confirm", never in green (0.9.1). A new order that
 differs from the advice for its item gets a red outline, a line in the panel and a chat message. Warnings never block
 or change anything: the Confirm button is untouched.
 
@@ -143,7 +144,7 @@ from `baseline` lines.
 
 ## Settings
 
-The panel's first header shows the running version ("Version 0.9.0"), to compare with the Plugin Hub's.
+The panel's first header shows the running version ("Version 0.9.1"), to compare with the Plugin Hub's.
 
 | setting | default | |
 |---|---|---|

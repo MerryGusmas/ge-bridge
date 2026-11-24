@@ -104,6 +104,22 @@ public class AdviceTest
 	}
 
 	@Test
+	public void theOfferScreenNeverShowsGreen()
+	{
+		// 0.9.1: the price typed is not read before Confirm, so a matching quantity is not a matching offer
+		final java.util.Map<Integer, String> none = new java.util.HashMap<>();
+		final AdviceView ok = AdviceView.build(advice(), slots(), none, advice().check(BETA, "buy", 200, slots()), 2, 3_600_000L, true);
+		assertEquals(AdviceView.TEXT, ok.lines.get(0).color);
+		assertEquals(AdviceView.PRICE_NOTE, ok.lines.get(ok.lines.size() - 1).left);
+		final AdviceView warn = AdviceView.build(advice(), slots(), none, advice().check(BETA, "buy", 250, slots()), 2, 3_600_000L, true);
+		for (AdviceView.Line l : warn.lines)
+		{
+			assertEquals(AdviceView.WARN, l.color);
+			assertFalse(AdviceView.PRICE_NOTE.equals(l.left));
+		}
+	}
+
+	@Test
 	public void sellingABidThatCarriesAListPriceIsAdvised()
 	{
 		// 2026-10-13: a pick's bid completed and was collected; setting up the sale read "Advice is to buy this item"
